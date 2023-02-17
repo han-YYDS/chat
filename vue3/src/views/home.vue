@@ -9,6 +9,7 @@
         @log-out="handleLogOut"
       ></user-info>
       <language-icon class="header-item language"></language-icon>
+      <button @click="handleRouterChange('./Historicalmeetings')">历史会议</button>
     </div>
     <stream-preview ref="streamPreviewRef"></stream-preview>
     <room-control
@@ -17,7 +18,7 @@
       @enter-room="handleEnterRoom"
       
     ></room-control>
-    <p>{{ Hello }}</p>
+    <!-- <p>{{ Hello }}</p> -->
   </div>
 </template>
 
@@ -42,7 +43,7 @@ const avatarUrl = ref();
 const userId = ref();
 const { t } = useI18n();
 const roomEngine = useGetRoomEngine();
-const Hello = ref("sddsdsd");
+//const Hello = ref("sddsdsd");
 const roomId = checkNumber((route.query.roomId) as string) ? route.query.roomId : '';
 const givenRoomId: Ref<string> = ref((roomId) as string);
 
@@ -50,7 +51,9 @@ const basicInfo = getBasicInfo();
 userName.value = basicInfo?.userName;
 avatarUrl.value = basicInfo?.avatarUrl;
 userId.value = basicInfo?.userId;
-
+const handleRouterChange = (path: string) => {
+      router.replace(path);
+    };
 function setTUIRoomData(action: string, mode?: string) {
   const roomParam = streamPreviewRef.value.getRoomParam();
   const roomData = {

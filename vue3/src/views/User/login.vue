@@ -40,7 +40,7 @@
           <el-form-item>
             <el-button class="loginBtn"
               type="primary"
-              @click="handleSubmitForm()"
+              @click="handleRouterChange('/home')"
             >登录</el-button>
             <el-button @click="handleResetForm()" type="primary" class="loginBtn">重置</el-button>
           </el-form-item>

@@ -1,6 +1,7 @@
 <template>
   <div id="roomContainer" ref="roomRef" class="tui-room">
     <room-header v-show="showRoomTool" class="header" @log-out="logOut"></room-header>
+    <room-header v-show="showRoomTool" class="header" @History="handleRouterChange('./views/Historicalmeetings')"></room-header>
     <room-content ref="roomContentRef" :show-room-tool="showRoomTool" class="content"></room-content>
     <room-footer
       v-show="showRoomTool"
@@ -39,8 +40,9 @@ import TUIRoomEngine, {
 import TUIRoomAegis from './utils/aegis';
 import { MESSAGE_DURATION } from './constants/message';
 import { useI18n } from 'vue-i18n';
-
+import router from '@/router';
 import useGetRoomEngine from './hooks/useRoomEngine';
+import { userInfo } from '@/config/basic-info-config';
 
 const isElectron = isElectronEnv();
 const roomEngine = useGetRoomEngine();
@@ -150,6 +152,11 @@ async function init(option: RoomInitData) {
   basicStore.setBasicInfo(option);
   roomStore.setLocalUser(option);
 }
+function getSystemTime() {
+		var time = new Date();
+    return time.toLocaleString();
+	}
+
 
 async function createRoom(options: {
   roomId: string,
@@ -168,6 +175,19 @@ async function createRoom(options: {
     name: roomName,
     roomType: TUIRoomType.kGroup,
   };
+  console.log(getSystemTime());//这样可以得到一个创建会议的时间
+  console.log(roomId);//得到roomId
+  console.log(roomName);//得到roomname
+  console.log(userInfo);
+  console.log("奥特曼");
+  //返回的属性列表
+  const infolist={
+    roomid:roomId,
+    username:userInfo.userName,
+    roomname:roomName,
+    time:getSystemTime()
+  }
+
   if (roomMode === 'FreeSpeech') {
     Object.assign(roomParams, {
       enableAudio: true,
@@ -209,6 +229,7 @@ async function createRoom(options: {
   **/
   roomStore.setRoomParam(roomParam);
   TUIRoomAegis.reportEvent({ name: 'createRoom', ext1: 'createRoom-success' });
+ return infolist;
 }
 
 async function enterRoom(options: {roomId: string, roomParam?: RoomParam }) {
@@ -274,7 +295,9 @@ const logOut = () => {
   resetStore();
   emit('onLogOut');
 };
-
+const handleRouterChange = (path: string) => {
+      router.replace(path);
+    };
 const onDestroyRoom = (info: { code: number; message: string }) => {
   resetStore();
   emit('onDestroyRoom', info);

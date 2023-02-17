@@ -101,8 +101,8 @@ export default defineComponent({
           { required: true, message: "请输入密码", trigger: "change" },
         ],
         password1:[
-        { required: true, message: "请输入密码", trigger: "change" },
-        ]
+        { required: true, message: "请再次输入密码", trigger: "change" },
+        ]//再次输入密码
       },
     });
     const handleResetForm = () => {
@@ -125,35 +125,35 @@ export default defineComponent({
       //     userAvatar:"",//头像
       //   }
       // });
-      if (register.value && register.value.validate) {
-        register.value.validate((valid: boolean) => {
-          if (valid) {
-            // 如果表单都校验通过
-            const user = {
-              name: state.registerForm.name,
-              password: state.registerForm.password,
-            };
-            // getregister(user).then((res: registerData) => {
-            //   ElMessage({
-            //     message: res.message,
-            //     type: "success",
-            //     center: true,
-            //   });
-            //   store.commit("setUser", res.user);
-            //   handleResetForm();
-            //   router.replace("/");
-            // });
-            console.log("chenggong ");
-          } else {
-            // 校验失败
-            ElMessage({
-              message: "请填写内容",
-              type: "warning",
-              center: true,
-            });
-          }
-        });
-      }
+      // if (register.value && register.value.validate) {
+      //   register.value.validate((valid: boolean) => {
+      //     if (valid) {
+      //       // 如果表单都校验通过
+      //       const user = {
+      //         name: state.registerForm.name,
+      //         password: state.registerForm.password,
+      //       };
+      //       // getregister(user).then((res: registerData) => {
+      //       //   ElMessage({
+      //       //     message: res.message,
+      //       //     type: "success",
+      //       //     center: true,
+      //       //   });
+      //       //   store.commit("setUser", res.user);
+      //       //   handleResetForm();
+      //       //   router.replace("/");
+      //       // });
+      //       console.log("chenggong ");
+      //     } else {
+      //       // 校验失败
+      //       ElMessage({
+      //         message: "请填写内容",
+      //         type: "warning",
+      //         center: true,
+      //       });
+      //     }
+      //   });
+      // }
     };
     const handleRouterChange = (path: string) => {
       router.replace(path);

@@ -52,7 +52,7 @@ import { ElMessage } from 'element-plus';
 import { MESSAGE_DURATION } from '../../constants/message';
 import TUIRoomEngine from '@tencentcloud/tuiroom-engine-js';
 import { useRoomStore } from '../../stores/room';
-
+import router from '@/router';
 interface Props {
   userId: string,
   userName: string,
