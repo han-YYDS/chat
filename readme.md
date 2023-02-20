@@ -17,7 +17,8 @@
 #### 操作
 
 1. 需要将 src/generated-sources文件夹标记为 generated source root
-   1. ![image-20230221005816289](https://test4projectwf.oss-cn-hangzhou.aliyuncs.com/image/202302210058412.png)
+   1. ![image](https://user-images.githubusercontent.com/78590502/220167343-a5ab74fa-eaa7-4cfc-adbf-652cce592d52.png)
+
 
 
 
