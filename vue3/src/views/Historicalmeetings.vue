@@ -1,94 +1,61 @@
 <template>
-      <!-- <user-info
-        class="header-item user-info"
-        :user-id="userId"
-        :user-name="userName"
-        :avatar-url="avatarUrl"
-        @log-out="handleLogOut"
-      ></user-info> -->
-      <div>
+      <div class="background">
     <!-- 用户列表卡片 -->
     <el-card class="box-card">
-      <el-form :inline="true" :model="formInline" class="demo-form-inline">
-        <!-- <el-form-item label="按日期" label-width="70px">
-          <el-select clearable v-model="formInline.city" placeholder="请选择">
-            <el-option
-              v-for="item in cities"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value">
-              <span style="float: left">{{ item.label }}</span>
-              <span style="float: right; color: #8492a6; font-size: 13px">{{ item.value }}</span>
-            </el-option>
-          </el-select>
-        </el-form-item> -->
+      <el-form :inline="true" ref="formInline" :model="formInline" class="demo-form-inline">
         <div>
-        <span>按日期搜索</span>
-        <el-date-picker v-model="value1" type="datetime" placeholder="选择日期时间"  :picker-options="pickerOptions1">
+        <el-form-item label="发起人"  label-width="70px" class="item" prop="username">
+          <el-input clearable v-model="formInline.username" placeholder="请输入用户名"></el-input>
+        </el-form-item>
+        <el-form-item label="房间号"  label-width="70px" class="item" prop="roomId">
+          <el-input clearable v-model="formInline.roomId" placeholder="请输入房间号"></el-input>
+        </el-form-item >
+        <el-form-item prop="datetime" >
+          <span style="color:#409eff">按日期搜索 </span>
+        <el-date-picker v-model="formInline.datetime" type="datetime" placeholder="选择日期时间" >
        </el-date-picker>
-
-        <el-form-item label="发起人" label-width="70px">
-          <el-input clearable v-model="formInline.user" placeholder="请输入用户名"></el-input>
-        </el-form-item>
-
-        <el-form-item label="房间号" label-width="70px">
-          <el-input clearable v-model="formInline.email" placeholder="请输入房间号"></el-input>
-        </el-form-item>
-
+      </el-form-item>
+        
         </div>
-        <!-- <el-form-item label-width="70px">
-          <el-radio v-model="formInline.radio" label="1">备选项</el-radio>
-          <el-radio v-model="formInline.radio" label="2">备选项</el-radio>
-          <el-radio v-model="formInline.radio" label="3">备选项</el-radio>
-                 <el-button type="primary" @click="onSubmit">查询</el-button>
-        </el-form-item> -->
-        <!-- <el-form-item label="昵称" label-width="70px">
-          <el-input clearable v-model="formInline.nikeName" placeholder="请输入昵称"></el-input>
-        </el-form-item> -->
         <el-form-item style="margin-left: 10px">
-          <el-button icon="el-icon-refresh">重置</el-button>
-          <el-button type="primary" icon="el-icon-search">查询</el-button>
-          <!-- <el-button type="success" icon="el-icon-plus">添加</el-button>
-          <el-button type="warning" icon="el-icon-download">导出</el-button> -->
-          <el-button type="warning" icon="el-icon-download" @click="handleRouterChange('/home')">返回</el-button>
+          <el-button type="primary" @click="resetForm('formInline')" >重置</el-button>
+          <el-button type="primary">查询</el-button>
+          <el-button type="primary" @click="handleRouterChange('/home')">返回</el-button>
+          <el-button type="primary" @click="if_true">管理</el-button>
+          <el-button type="delete" v-if="flag" v-on:click="handlerDelete()">删除</el-button>
         </el-form-item>
       </el-form>
       <!-- 表格内容显示区域   -->
       <el-table
         :data="tableData"
-        border
-        style="width: 100%; height: 400px">
+        style="width: 100%; height: 400px; "
+        >
+        <!-- 点击管理按钮后进行批量管理 -->
+        <el-table-column type="selection" reserve-selection width="55" v-if=flag></el-table-column>
         <el-table-column
           prop="date"
           label="日期"
-          width="180">
+          width="180"
+          >
         </el-table-column>
         <el-table-column
           prop="name"
           label="会议发起人"
-          width="180">
+          width="180"
+          >
         </el-table-column>
         <el-table-column
-          prop="address"
-          label="房间号">
+          prop="roomId"
+          label="房间号"
+          >
         </el-table-column>
       </el-table>
-      <!--   分页 -->
-      <!-- <el-pagination
-        style="padding-top: 15px"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-        :current-page="currentPage4"
-        :page-sizes="[100, 200, 300, 400]"
-        :page-size="100"
-        layout="total, sizes, prev, pager, next, jumper"
-        :total="400">
-      </el-pagination> -->
     </el-card>
   </div>
 </template>
 <script>
 import router from '@/router';
+import { ElMessage } from "element-plus";
 export default {
   name: 'Users',
   data () {
@@ -116,33 +83,74 @@ export default {
           }]
         },
       formInline: {
-        user: '',
-        email: '',
-        city: '',
-        radio: '1',
-        nikeName: '',
+        username: '',
+        roomId:'',
+        datetime:''
+
         
       },
       value1:'',
       currentPage4: 4,
       value: '',
+      flag:false,//初始时不显示
+      selectionList:[], //定义删除/批量删除
       tableData: [{
         date: '2016-05-02',
         name: '王小虎',
-        address: '1'
+        roomId: '1',
       }, {
         date: '2016-05-04',
-        name: '王小虎',
-        address: '2'
+        name: '阿斯顿',
+        roomId: '2',
       }, {
         date: '2016-05-01',
-        name: '王小虎',
-        address: '3'
+        name: '阿瑟东',
+        roomId: '3',
       }, {
         date: '2016-05-03',
-        name: '王小虎',
-        address: '4'
-      }],
+        name: '顶顶顶',
+        roomId: '4',
+      }, {
+        date: '2016-05-03',
+        name: '顶顶顶',
+        roomId: '4',
+      }, {
+        date: '2016-05-04',
+        name: '阿斯顿',
+        roomId: '2',
+      }, {
+        date: '2016-05-04',
+        name: '阿斯顿',
+        roomId: '2',
+      }, {
+        date: '2016-05-04',
+        name: '阿斯顿',
+        roomId: '2',
+      }, {
+        date: '2016-05-04',
+        name: '阿斯顿',
+        roomId: '2',
+      }, {
+        date: '2016-05-04',
+        name: '阿斯顿',
+        roomId: '2',
+      }, {
+        date: '2016-05-04',
+        name: '阿斯顿',
+        roomId: '2',
+      }, {
+        date: '2016-05-04',
+        name: '阿斯顿',
+        roomId: '2',
+      }, {
+        date: '2016-05-04',
+        name: '阿斯顿',
+        roomId: '2',
+      }, {
+        date: '2016-05-04',
+        name: '阿斯顿',
+        roomId: '2',
+      },],
     }
   },
   methods: {
@@ -157,11 +165,40 @@ export default {
     },
     handleRouterChange (path) {
       router.replace(path);
-    }
+    },
+    handleRowClick (row, column, event) {//点击行触发，选中或不选中复选框
+   this.$refs.multipleTable.toggleRowSelection(row);
+  },
+  resetForm(formname)//清空表单
+  {
+    this.$refs[formname].resetFields()
+  },
+  if_true()
+  {
+    this.flag=!this.flag;
+    console.log(this.flag);
+
+  }
   }
 }
 </script>
-<style lang="scss" scoped>
+<style lang="scss">
+
+.background{
+  width: 100%;
+  height: 100%;
+  background-color: #010101;
+  color: #B3B8C8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: PingFangSC-Medium;
+}
+.el-card {//修改el-card样式
+  // padding: 0px;
+  background-color: #010101;
+}
+
 .home-container {
   width: 100%;
   height: 100%;
@@ -188,4 +225,14 @@ export default {
     }
   }
 }
+.el-table {
+    background-color: #010101;
+}
+
+.item .el-form-item__label{
+    color: #409eff;;
+  }
+
+
+
 </style>
