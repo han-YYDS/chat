@@ -1,7 +1,7 @@
 <template>
       <div class="background">
     <!-- 用户列表卡片 -->
-    <el-card class="box-card">
+    <el-card class="box-card" >
       <el-form :inline="true" ref="formInline" :model="formInline" class="demo-form-inline">
         <div>
         <el-form-item label="发起人"  label-width="70px" class="item" prop="username">
@@ -19,7 +19,7 @@
         </div>
         <el-form-item style="margin-left: 10px">
           <el-button type="primary" @click="resetForm('formInline')" >重置</el-button>
-          <el-button type="primary">查询</el-button>
+          <el-button type="primary" @click="onSubmit">查询</el-button>
           <el-button type="primary" @click="handleRouterChange('/home')">返回</el-button>
           <el-button type="primary" @click="if_true">管理</el-button>
           <el-button type="delete" v-if="flag" v-on:click="handlerDelete()">删除</el-button>
@@ -29,10 +29,21 @@
       <el-table
         :data="tableData"
         style="width: 100%; height: 400px; "
+        border
+        :cell-style="{
+          borderColor:'blue',
+          backgroundColor:'#010101',
+        }"
+        :header-cell-style="
+        {
+          borderColor:'blue',
+          backgroundColor:'#010101',
+          // 'text-align':'center'
+        }"
         >
         <!-- 点击管理按钮后进行批量管理 -->
         <el-table-column type="selection" reserve-selection width="55" v-if=flag></el-table-column>
-        <el-table-column
+        <el-table-column 
           prop="date"
           label="日期"
           width="180"
@@ -47,8 +58,14 @@
         <el-table-column
           prop="roomId"
           label="房间号"
+          width="180"
           >
         </el-table-column>
+        <el-table-column label="操作" width="160" prop="operation" key="slot">
+          <template v-slot="scope">
+    <el-button type="danger" icon="el-icon-delete" size="mini">删除</el-button>   
+</template>
+</el-table-column>
       </el-table>
     </el-card>
   </div>
@@ -60,28 +77,28 @@ export default {
   name: 'Users',
   data () {
     return {
-      pickerOptions1: {
-          shortcuts: [{
-            text: '今天',
-            onClick(picker) {
-              picker.$emit('pick', new Date());
-            }
-          }, {
-            text: '昨天',
-            onClick(picker) {
-              const date = new Date();
-              date.setTime(date.getTime() - 3600 * 1000 * 24);
-              picker.$emit('pick', date);
-            }
-          }, {
-            text: '一周前',
-            onClick(picker) {
-              const date = new Date();
-              date.setTime(date.getTime() - 3600 * 1000 * 24 * 7);
-              picker.$emit('pick', date);
-            }
-          }]
-        },
+      // pickerOptions1: {
+      //     shortcuts: [{
+      //       text: '今天',
+      //       onClick(picker) {
+      //         picker.$emit('pick', new Date());
+      //       }
+      //     }, {
+      //       text: '昨天',
+      //       onClick(picker) {
+      //         const date = new Date();
+      //         date.setTime(date.getTime() - 3600 * 1000 * 24);
+      //         picker.$emit('pick', date);
+      //       }
+      //     }, {
+      //       text: '一周前',
+      //       onClick(picker) {
+      //         const date = new Date();
+      //         date.setTime(date.getTime() - 3600 * 1000 * 24 * 7);
+      //         picker.$emit('pick', date);
+      //       }
+      //     }]
+      //   },
       formInline: {
         username: '',
         roomId:'',
@@ -157,12 +174,6 @@ export default {
     onSubmit () {
       console.log('submit!')
     },
-    handleSizeChange (val) {
-      console.log(`每页 ${val} 条`)
-    },
-    handleCurrentChange (val) {
-      console.log(`当前页: ${val}`)
-    },
     handleRouterChange (path) {
       router.replace(path);
     },
@@ -225,13 +236,15 @@ export default {
     }
   }
 }
-.el-table {
+.el-table  {
     background-color: #010101;
+    // text-align: center;
 }
-
+//表头居中
 .item .el-form-item__label{
     color: #409eff;;
   }
+
 
 
 
