@@ -55,4 +55,3 @@ public class QUserInfoPO extends EntityPathBase<UserInfoPO> {
 
 }
 
-ls

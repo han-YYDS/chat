@@ -12,9 +12,6 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 
-/**
-    前后台数据交互
- */
 @RestController // 定义为返回json的controller
 public class UserController {
     @Resource
@@ -78,7 +75,6 @@ public class UserController {
 //        return ResponseData.ofSuccess("success",null);
 //    }
 
-    // TODO
     @PostMapping("/createGroup")
     public ResponseData createGroup(@RequestBody Map<String,Object> params){
         return userService.createGroup(params);
@@ -96,13 +92,53 @@ public class UserController {
         return ResponseData.ofSuccess("success",userService.loadGroupUserInfo(groupId));
     }
 
-    // TODO
+
+    /**
+     * 创建房间
+     *  1. 插入历史会议条目
+     *  2. 返回会议号
+     * @param params
+     *  1. userId
+     * @return
+     *  1. roomId
+     */
     @GetMapping("/createRoom")
-    // 创建房间,返回房间号
-    public ResponseData createRoom(){
-        int roomId = (int) ((Math.random()*9+1)*100000);
+    public ResponseData createRoom(@RequestBody Map<String,Object> params){
+        // 获取满足要求的房间号
+        int roomId = userService.createRoomId();
+
+        // 插入history
+        userService.insertHistory(params,roomId);
 
         return ResponseData.ofSuccess("success",roomId);
+    }
+
+    /**
+     *  参加会议
+     * @param params
+     * @return
+     */
+    @GetMapping("/joinRoom")
+    public ResponseData joinRoom(@RequestBody Map<String,Object> params){
+//        int roomId = (int)((Math.random()*9+1)*100000);
+//
+//        // 对创建房间进行记录
+//        userService.insertHistory(params,roomId);
+//
+//        // 返回的是历史会议号还是
+//        return ResponseData.ofSuccess("success", null);
+        return null;
+    }
+
+    /**
+     * 加载历史会议, 对参与过的会议进行展示
+     * @param params
+     * @return
+     */
+    @GetMapping("/history")
+    // 创建房间,返回房间号
+    public ResponseData loadHistory(@RequestBody Map<String,Object> params){
+        return ResponseData.ofSuccess("success",userService.loadHistory(params));
     }
 
 

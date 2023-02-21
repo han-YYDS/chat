@@ -5,10 +5,12 @@ import cn.wangsr.chat.common.CommonConstant;
 import cn.wangsr.chat.common.GlobalException;
 import cn.wangsr.chat.common.ResponseData;
 import cn.wangsr.chat.dao.GroupRepository;
+import cn.wangsr.chat.dao.HistoryRepository;
 import cn.wangsr.chat.dao.UserFriendsRepository;
 import cn.wangsr.chat.dao.UserRepository;
 import cn.wangsr.chat.listener.SucEventListener;
 import cn.wangsr.chat.model.*;
+import cn.wangsr.chat.model.QHistoryPO;
 import cn.wangsr.chat.model.QUserFriendsPO;
 import cn.wangsr.chat.model.QUserGroupPO;
 import cn.wangsr.chat.model.QUserInfoPO;
@@ -24,8 +26,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.annotation.Resource;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -44,6 +49,9 @@ public class UserServiceImpl {
     UserRepository userRepository;
     @Resource
     UserFriendsRepository userFriendsRepository;
+    @Resource
+    HistoryRepository historyRepositpory;
+
 
 
     /**
@@ -69,6 +77,8 @@ public class UserServiceImpl {
             throw new GlobalException(1,"用户已存在");
         }
         userInfoPO.setPassword(DigestUtils.md5DigestAsHex(userInfoPO.getPassword().getBytes()));
+
+
         try {
             userRepository.save(userInfoPO);
             return ResponseData.ofSuccess("注册成功",null);
@@ -369,6 +379,7 @@ public class UserServiceImpl {
      * @return
      */
     public List<UserSuccessDTO> loadGroupUserInfo(Long groupId){
+        // 按groupId得到一个group
         UserGroupPO groupRepositoryOne = groupRepository.getOne(groupId);
         QUserInfoPO qUserInfoPO = QUserInfoPO.userInfoPO;
         String[] groupUsersIds = groupRepositoryOne.getGroupUsersIds().split(CommonConstant.CHAR_CHINESE_DUN);
@@ -378,6 +389,7 @@ public class UserServiceImpl {
                 userIds[i] = Long.valueOf(groupUsersIds[i]);
             }
         }
+
         List<UserSuccessDTO> arrayList = jpaQueryFactory.select(
                 Projections.bean(UserSuccessDTO.class,
                         qUserInfoPO.id.as("userId"),
@@ -393,6 +405,39 @@ public class UserServiceImpl {
         return arrayList;
     }
 
+    /**
+     * 插入会议,在创建会议时进行记录
+     *  1.
+     * @param
+     * @return
+     */
+    public void insertHistory(@RequestBody Map<String,Object> params, int roomId){
+        Long userId = ((Long) params.get("userId")).longValue();
+        QHistoryPO qHistoryPO = QHistoryPO.historyPO;
+
+        // 判断userId是否存在
+        QUserInfoPO qUserInfoPO = QUserInfoPO.userInfoPO;
+        UserSuccessDTO userSuccessDTO = jpaQueryFactory.select(
+                        Projections.bean(UserSuccessDTO.class,
+                                qUserInfoPO.id.as("userId"),
+                                qUserInfoPO.username,
+                                qUserInfoPO.nickname,
+                                qUserInfoPO.avatarUrl,
+                                qUserInfoPO.email
+                        )
+                )
+                .where(qUserInfoPO.id.eq((Long) params.get("userId")))
+                .from(qUserInfoPO)
+                .fetchOne();
+        if(userSuccessDTO == null){
+            throw new GlobalException(1,"用户未存在");
+        }
+
+        String participators = ","+ String.valueOf(userId) + ",";
+        HistoryPO historyPO = HistoryPO.builder().creatorName(userSuccessDTO.getUsername()).creatorId(userId).participators(participators).roomId(roomId).isAlive(1).build();
+
+            historyRepositpory.save(historyPO); // 通过该方式来实现insert
+    }
 
     public ResponseData createGroup(Map<String, Object> params) {
         Long userId = ((Integer) params.get("userId")).longValue();
@@ -413,6 +458,7 @@ public class UserServiceImpl {
                 .fetchOne();
 
         ArrayList<Integer> invitedUserIds = (ArrayList<Integer>) params.get("invitedUserIds");
+
         String groupUsersIds = ","+String.join(",", invitedUserIds.stream().map(String::valueOf).collect(Collectors.toList()))+",";
 
         try {
@@ -434,6 +480,64 @@ public class UserServiceImpl {
             e.printStackTrace();
             return ResponseData.ofFailed("群聊创建失败", null);
 
+        }
+    }
+
+    /**
+     *  加载历史会议条目, 显示参与过的会议
+     *  1. 残留会议消亡
+     *  2. 与会者记录
+     * @param
+     * @return
+     */
+    public List<UserSuccessDTO> loadHistory(@RequestBody Map<String,Object> params){
+        return null;
+    }
+
+    /**
+     * 创建房间
+     *  1. 首先生成一个随机的六位数作为roomId
+     *  2. select该房间号, 判断是否有同Id的 alive房间
+     *
+     */
+    public int createRoomId() {
+        while(true) {
+            int roomId = (int) ((Math.random() * 9 + 1) * 100000);
+            QHistoryPO qHistoryPO = QHistoryPO.historyPO;
+            HistoryChatDTO historyChatDTO = jpaQueryFactory.select(
+                            Projections.bean(HistoryChatDTO.class,
+                                    qHistoryPO.id.as("userId"),
+                                    qHistoryPO.creatorName,
+                                    qHistoryPO.creatorId,
+                                    qHistoryPO.participators,
+                                    qHistoryPO.roomId,
+                                    qHistoryPO.isAlive,
+                                    qHistoryPO.createTime
+                            )
+                    )
+                    .where(qHistoryPO.roomId.eq(roomId)
+                        .and(qHistoryPO.isAlive.eq(1)))
+                    .from(qHistoryPO)
+                    .fetchOne();
+            if (historyChatDTO == null) {
+                return roomId;
+            }
+            else{
+                Duration dur= Duration.between(LocalDateTime.now(), historyChatDTO.getCreateTime());
+                long minGap = dur.toMinutes();
+                if(minGap >= 40){
+                    long execute = jpaQueryFactory.update(qHistoryPO).
+                            set(qHistoryPO.isAlive, 0)
+                            .where(qHistoryPO.roomId.eq(roomId))
+                            .execute();
+                    if(execute != 1){
+                        throw new GlobalException(400,"残留会议消亡失败");
+                    }
+                }
+                else{
+                    return roomId;
+                }
+            }
         }
     }
 }

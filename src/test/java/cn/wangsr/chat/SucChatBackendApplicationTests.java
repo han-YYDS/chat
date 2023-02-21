@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 
-@SpringBootTest
+@SpringBootTest // 单元测试
 class SucChatBackendApplicationTests {
 
     @Resource
