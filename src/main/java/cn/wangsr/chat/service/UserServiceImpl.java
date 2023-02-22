@@ -3,13 +3,11 @@ package cn.wangsr.chat.service;
 import cn.wangsr.chat.common.CommonConstant;
 import cn.wangsr.chat.common.GlobalException;
 import cn.wangsr.chat.common.ResponseData;
-import cn.wangsr.chat.dao.GroupRepository;
-import cn.wangsr.chat.dao.HistoryRepository;
-import cn.wangsr.chat.dao.UserFriendsRepository;
-import cn.wangsr.chat.dao.UserRepository;
+import cn.wangsr.chat.dao.*;
 import cn.wangsr.chat.listener.SucEventListener;
 import cn.wangsr.chat.model.*;
 import cn.wangsr.chat.model.QHistoryPO;
+import cn.wangsr.chat.model.QJoinLogPO;
 import cn.wangsr.chat.model.QUserFriendsPO;
 import cn.wangsr.chat.model.QUserGroupPO;
 import cn.wangsr.chat.model.QUserInfoPO;
@@ -25,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
 import java.time.Duration;
@@ -50,6 +49,8 @@ public class UserServiceImpl {
     @Resource
     HistoryRepository historyRepositpory;
 
+    @Resource
+    JoinLogRepository joinLogRepository;
 
 
     /**
@@ -408,12 +409,14 @@ public class UserServiceImpl {
 
     /**
      * 插入会议,在创建会议时进行记录
-     *  1.
+     *  1. 在history表中,添加该条目
+     *  2. 在joinLog表中,添加一条创建会议者的与会记录
      * @param
      * @return
      */
     public void insertHistory(Long userId, Long roomId){
         QHistoryPO qHistoryPO = QHistoryPO.historyPO;
+        QJoinLogPO qJoinLogPO = QJoinLogPO.joinLogPO;
 
         // 判断userId是否存在
         QUserInfoPO qUserInfoPO = QUserInfoPO.userInfoPO;
@@ -432,10 +435,13 @@ public class UserServiceImpl {
         if(userSuccessDTO == null){
             throw new GlobalException(1,"用户未存在");
         }
-
         String participators = ","+ String.valueOf(userId) + ",";
         HistoryPO historyPO = HistoryPO.builder().creatorName(userSuccessDTO.getUsername()).creatorId(userId).participators(participators).roomId(roomId).isAlive(1).build();
         historyRepositpory.save(historyPO); // 通过该方式来实现insert
+
+        String joinedChats = ","+ String.valueOf(userId) + ",";
+        JoinLogPO joinLogPO = JoinLogPO.builder().joinerId(userId).joinChat(historyPO.getId()).build();
+        joinLogRepository.save(joinLogPO);
     }
 
     public ResponseData createGroup(Map<String, Object> params) {
@@ -484,13 +490,34 @@ public class UserServiceImpl {
 
     /**
      *  加载历史会议条目, 显示参与过的会议
-     *  1. 残留会议消亡
-     *  2. 与会者记录
+     *  1. 与会者记录
      * @param
      * @return
      */
-    public List<UserSuccessDTO> loadHistory(@RequestBody Map<String,Object> params){
-        return null;
+    public List<HistoryChatDTO> loadHistory(Long userId) {
+        // 1.查询joinLog表,得到join表中参与过的 historyId集合
+        QJoinLogPO qJoinLogPO = QJoinLogPO.joinLogPO;
+        QHistoryPO qHistoryPO = QHistoryPO.historyPO;
+        List<Long> historyIds = jpaQueryFactory.select(qJoinLogPO.joinChat)
+                .where(qJoinLogPO.joinerId.eq(userId))
+                .from(qJoinLogPO)
+                .fetch();
+        List<HistoryChatDTO> historyChatDTOs = jpaQueryFactory.select(
+                        Projections.bean(
+                                HistoryChatDTO.class,
+                                qHistoryPO.id,
+                                qHistoryPO.creatorName,
+                                qHistoryPO.creatorId,
+                                qHistoryPO.participators,
+                                qHistoryPO.roomId,
+                                qHistoryPO.isAlive,
+                                qHistoryPO.createTime
+                        )
+                )
+                .where(qHistoryPO.id.in(historyIds))
+                .from(qHistoryPO)
+                .fetch();
+        return historyChatDTOs;
     }
 
     /**
@@ -598,6 +625,12 @@ public class UserServiceImpl {
                 .where(qHistoryPO.id.eq(historyChatDTO.getId()))
                 .set(qHistoryPO.participators, Sparticipators)
                 .execute();
+
+        // 在jionLog表中进行记录
+        JoinLogPO joinLogPO = JoinLogPO.builder().joinerId(userId).joinChat(historyChatDTO.getId()).build();
+        joinLogRepository.save(joinLogPO);
+
+
         return ResponseData.ofSuccess("欢迎首次入会", null);
 
     }

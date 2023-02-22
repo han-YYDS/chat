@@ -29,7 +29,6 @@ public class UserController {
     public ResponseData login(@RequestParam String username, @RequestParam String password, HttpServletResponse response){
         UserSuccessDTO login = userService.login(username, password); // 调用JPA函数
         response.setHeader(JwtUtils.AUTH_HEADER_KEY,login.getToken());
-        // return code,sid
         return ResponseData.ofSuccess("登录成功",login);
     }
 
@@ -102,14 +101,13 @@ public class UserController {
      */
     @GetMapping("/createRoom")
     @IgnoreToken
-    public ResponseData createRoom(@RequestParam(value = "userId") String userId){
+    public ResponseData createRoom(@RequestParam String userId){
         // 获取满足要求的房间号
-
         Long roomId = userService.createRoomId();
 
         // 插入history
         Long luserId = Long.parseLong(userId);
-        userService.insertHistory(luserId,(long)724173);
+        userService.insertHistory(luserId,roomId);
 
         return ResponseData.ofSuccess("success",roomId);
     }
@@ -128,13 +126,14 @@ public class UserController {
 
     /**
      * 加载历史会议, 对参与过的会议进行展示
-     * @param params
+     * @param
      * @return
      */
     @GetMapping("/history")
-    // 创建房间,返回房间号
-    public ResponseData loadHistory(@RequestBody Map<String,Object> params){
-        return ResponseData.ofSuccess("success",userService.loadHistory(params));
+    @IgnoreToken
+    public ResponseData history(@RequestParam String userId){
+        Long LuserId = Long.parseLong(userId);
+        return ResponseData.ofSuccess("加载历史会议成功", userService.loadHistory(LuserId));
     }
 
 

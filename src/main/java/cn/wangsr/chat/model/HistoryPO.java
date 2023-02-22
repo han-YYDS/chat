@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -20,7 +19,6 @@ import java.time.LocalDateTime;
 @DynamicInsert
 @DynamicUpdate
 @Entity(name= HistoryPO.ENTITY_NAME)
-// 创建者用户名  会议创建时间   roomID
 public class HistoryPO implements Serializable {
     public static final String ENTITY_NAME = "history";
     private static final long serialVersionUID = 1L;
