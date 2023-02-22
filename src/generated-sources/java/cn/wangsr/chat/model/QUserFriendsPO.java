@@ -21,9 +21,9 @@ public class QUserFriendsPO extends EntityPathBase<UserFriendsPO> {
 
     public final NumberPath<Integer> belong = createNumber("belong", Integer.class);
 
-    public final DateTimePath<java.time.LocalDateTime> createTime = createDateTime("createTime", java.time.LocalDateTime.class);
-
     public final NumberPath<Long> id = createNumber("id", Long.class);
+
+    public final DateTimePath<java.time.LocalDateTime> joinTime = createDateTime("joinTime", java.time.LocalDateTime.class);
 
     public final StringPath noteName = createString("noteName");
 

@@ -42,7 +42,7 @@ public class UserFriendsPO implements Serializable {
     @Column(columnDefinition = "int(10) COMMENT '1.申请人 2.被申请人'")
     private Integer belong;
     @CreationTimestamp
-    private LocalDateTime createTime;
+    private LocalDateTime joinTime;
     @UpdateTimestamp
     private LocalDateTime updateTime;
 
