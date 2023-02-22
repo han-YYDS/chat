@@ -110,7 +110,8 @@ export function createRoom(data){
     return request({
         url: '/createRoom',
         method: 'get',
-        data: data 
+        params: data,
+       
     })
 }
 

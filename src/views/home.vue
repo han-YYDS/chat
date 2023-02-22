@@ -107,9 +107,11 @@ async function generateRoomId(): Promise<number> {
  * 处理点击【创建房间】
 **/
 async function handleCreateRoom(mode: string) {
-  let params = { userId:basicInfo?.userId};
+  let userId : string = basicInfo.userId;
+ 
+  let params = { userId: userId.substring(5)};
   console.log("token", basicInfo?.userId);
-
+  console.log(params);
   createRoom(params).then(res =>{
     setTUIRoomData('createRoom', mode);
     let roomId = res.data;
@@ -130,9 +132,9 @@ async function handleCreateRoom(mode: string) {
  * 处理点击【进入房间】
 **/
 async function handleEnterRoom(roomId: number) {
-  const isRoomExist = await checkRoomExist(String(roomId));
+  //const isRoomExist = await checkRoomExist(String(roomId));
 
-  let params = { roomId:roomId};
+  let params = { roomId:roomId,userId:basicInfo.userId};
   joinRoom(params).then(res =>{
     //console.log(res.data);
     //let isSuccess = res.message;
@@ -144,10 +146,7 @@ async function handleEnterRoom(roomId: number) {
       },
     });
   })
-  if (!isRoomExist) {
-    alert(t('The room does not exist, please confirm the room number or create a room!'));
-    return;
-  }
+
   
 }
 
