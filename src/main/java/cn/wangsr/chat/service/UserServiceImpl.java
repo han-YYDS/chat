@@ -1,6 +1,5 @@
 package cn.wangsr.chat.service;
 
-import cn.hutool.system.UserInfo;
 import cn.wangsr.chat.common.CommonConstant;
 import cn.wangsr.chat.common.GlobalException;
 import cn.wangsr.chat.common.ResponseData;
@@ -21,7 +20,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.corundumstudio.socketio.SocketIOClient;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import org.hibernate.metamodel.model.convert.internal.JpaAttributeConverterImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
@@ -101,7 +99,8 @@ public class UserServiceImpl {
         // 在此调用 jpa 进行查询
         // 返回一个 DTO
         UserSuccessDTO userSuccessDTO = jpaQueryFactory.select(
-                Projections.bean(UserSuccessDTO.class,
+                Projections.bean(
+                        UserSuccessDTO.class,
                         qUserInfoPO.id.as("userId"),
                         qUserInfoPO.username,
                         qUserInfoPO.nickname,
@@ -112,6 +111,8 @@ public class UserServiceImpl {
                 .where(qUserInfoPO.username.eq(username).and(qUserInfoPO.password.eq(DigestUtils.md5DigestAsHex(password.getBytes()))))
                 .from(qUserInfoPO)
                 .fetchOne();
+
+        int a = 10;
 
         if(StringUtils.isEmpty(userSuccessDTO)){
            throw new GlobalException(400,"用户名或密码错误");
@@ -411,8 +412,7 @@ public class UserServiceImpl {
      * @param
      * @return
      */
-    public void insertHistory(@RequestBody Map<String,Object> params, int roomId){
-        Long userId = ((Long) params.get("userId")).longValue();
+    public void insertHistory(Long userId, Long roomId){
         QHistoryPO qHistoryPO = QHistoryPO.historyPO;
 
         // 判断userId是否存在
@@ -426,7 +426,7 @@ public class UserServiceImpl {
                                 qUserInfoPO.email
                         )
                 )
-                .where(qUserInfoPO.id.eq((Long) params.get("userId")))
+                .where(qUserInfoPO.id.eq((userId)))
                 .from(qUserInfoPO)
                 .fetchOne();
         if(userSuccessDTO == null){
@@ -435,8 +435,7 @@ public class UserServiceImpl {
 
         String participators = ","+ String.valueOf(userId) + ",";
         HistoryPO historyPO = HistoryPO.builder().creatorName(userSuccessDTO.getUsername()).creatorId(userId).participators(participators).roomId(roomId).isAlive(1).build();
-
-            historyRepositpory.save(historyPO); // 通过该方式来实现insert
+        historyRepositpory.save(historyPO); // 通过该方式来实现insert
     }
 
     public ResponseData createGroup(Map<String, Object> params) {
@@ -500,12 +499,13 @@ public class UserServiceImpl {
      *  2. select该房间号, 判断是否有同Id的 alive房间
      *
      */
-    public int createRoomId() {
+    public Long createRoomId() {
         while(true) {
-            int roomId = (int) ((Math.random() * 9 + 1) * 100000);
+            Long roomId = (long)((Math.random() * 9 + 1) * 100000);
             QHistoryPO qHistoryPO = QHistoryPO.historyPO;
             HistoryChatDTO historyChatDTO = jpaQueryFactory.select(
-                            Projections.bean(HistoryChatDTO.class,
+                            Projections.bean(
+                                    HistoryChatDTO.class,
                                     qHistoryPO.id.as("userId"),
                                     qHistoryPO.creatorName,
                                     qHistoryPO.creatorId,
@@ -519,6 +519,7 @@ public class UserServiceImpl {
                         .and(qHistoryPO.isAlive.eq(1)))
                     .from(qHistoryPO)
                     .fetchOne();
+
             if (historyChatDTO == null) {
                 return roomId;
             }
@@ -539,5 +540,65 @@ public class UserServiceImpl {
                 }
             }
         }
+    }
+
+    /**
+     * 用户加入会议
+     *  1.select出该会议
+     *  2.判断用户之前是否在会议中
+     *  3.若不在则添加到 participators中
+     * @param params
+     */
+    public ResponseData joinRoom(Map<String, Object> params) {
+        String SuserId = params.get("userId").toString();
+        Long userId = Long.parseLong(SuserId);
+
+        String SroomId = params.get("roomId").toString();
+        Long roomId = Long.parseLong(SroomId);
+
+        // 1.找到对应会议记录
+        QHistoryPO qHistoryPO = QHistoryPO.historyPO;
+        HistoryChatDTO historyChatDTO = jpaQueryFactory.select(
+                        Projections.bean(
+                                HistoryChatDTO.class,
+                                qHistoryPO.id,
+                                qHistoryPO.creatorName,
+                                qHistoryPO.creatorId,
+                                qHistoryPO.participators,
+                                qHistoryPO.roomId,
+                                qHistoryPO.isAlive,
+                                qHistoryPO.createTime
+                        )
+                )
+                .where(qHistoryPO.roomId.eq(roomId)
+                        .and(qHistoryPO.isAlive.eq(1)))
+                .from(qHistoryPO)
+                .fetchOne();
+        if (historyChatDTO == null) {
+            throw new GlobalException(400,"不存在该会议");
+        }
+
+        // 2.得到 participators集合, 并判断当前用户是否在其中
+        String[] participators = historyChatDTO.getParticipators().split(CommonConstant.CHAR_CHINESE_DUN);
+        Long[] userIds = new Long[participators.length];
+        for (int i = 0; i < participators.length; i++) {
+            if(!StringUtils.isEmpty(participators[i])){
+                userIds[i] = Long.valueOf(participators[i]);
+            }
+        }
+        for(Long id : userIds){
+            if(userId.equals(id)){
+                return ResponseData.ofSuccess("欢迎重新入会", null);
+            }
+        }
+
+        // 3.首次入会
+        String Sparticipators = historyChatDTO.getParticipators() + String.valueOf(userId) + ",";
+        long execute01 = jpaQueryFactory.update(qHistoryPO)
+                .where(qHistoryPO.id.eq(historyChatDTO.getId()))
+                .set(qHistoryPO.participators, Sparticipators)
+                .execute();
+        return ResponseData.ofSuccess("欢迎首次入会", null);
+
     }
 }

@@ -27,7 +27,7 @@ public class HistoryPO implements Serializable {
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     @Column(columnDefinition = "varchar(100) COMMENT '创建者用户名'")
     private String creatorName;
@@ -39,7 +39,7 @@ public class HistoryPO implements Serializable {
     private String participators;
 
     @Column(columnDefinition = "int(20) COMMENT '会议Id'")
-    private int roomId;
+    private Long roomId;
 
     @Column(columnDefinition = "int(20) COMMENT '会议状态: 0-消亡, 1-存活'")
     private int isAlive;

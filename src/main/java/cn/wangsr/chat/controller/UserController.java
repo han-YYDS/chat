@@ -97,37 +97,33 @@ public class UserController {
      * 创建房间
      *  1. 插入历史会议条目
      *  2. 返回会议号
-     * @param params
-     *  1. userId
+     * @param
      * @return
-     *  1. roomId
      */
     @GetMapping("/createRoom")
-    public ResponseData createRoom(@RequestBody Map<String,Object> params){
+    @IgnoreToken
+    public ResponseData createRoom(@RequestParam(value = "userId") String userId){
         // 获取满足要求的房间号
-        int roomId = userService.createRoomId();
+
+        Long roomId = userService.createRoomId();
 
         // 插入history
-        userService.insertHistory(params,roomId);
+        Long luserId = Long.parseLong(userId);
+        userService.insertHistory(luserId,(long)724173);
 
         return ResponseData.ofSuccess("success",roomId);
     }
 
     /**
      *  参加会议
+     *      需要对history表中的participators增加用户
      * @param params
      * @return
      */
-    @GetMapping("/joinRoom")
+    @PostMapping("/joinRoom")
+    @IgnoreToken
     public ResponseData joinRoom(@RequestBody Map<String,Object> params){
-//        int roomId = (int)((Math.random()*9+1)*100000);
-//
-//        // 对创建房间进行记录
-//        userService.insertHistory(params,roomId);
-//
-//        // 返回的是历史会议号还是
-//        return ResponseData.ofSuccess("success", null);
-        return null;
+        return userService.joinRoom(params);
     }
 
     /**

@@ -17,10 +17,10 @@ import java.time.LocalDateTime;
 public class HistoryChatDTO {
     private Long id; // 代表一次log
     private String creatorName;
-    private String creatorId; // 创建者的ID
-    private int roomId;
+    private Long creatorId; // 创建者的ID
+    private Long roomId;
     private LocalDateTime createTime;
-    private String participator; // 与会者 例如 ,3,1,3, 通过逗号连接,开头末尾都有
+    private String participators; // 与会者 例如 ,3,1,3, 通过逗号连接,开头末尾都有
     private int isAlive; // 判断会议是否alive, 存活为1, 消亡为0
 }
 
