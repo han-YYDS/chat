@@ -11,6 +11,7 @@
         <div class="user-control-item-head" @click="showEditUserNameDialog">{{ t('Edit profile') }}</div>
       </div>
       <div class="user-control-item-foot" @click="$emit('logOut')">{{ t('Log out') }}</div>
+      <div class="user-control-item-foot" @click="$event => $emit('history')">{{ t('history') }}</div>
     </div>
     <el-dialog
       :title="t('Edit profile')"
@@ -59,7 +60,8 @@ interface Props {
   avatarUrl?: string,
 }
 defineProps<Props>();
-defineEmits(['logOut']);
+defineEmits(['logOut','history']);
+// defineEmits(['historyMeet']);
 
 const { t } = useI18n();
 const basicStore = useBasicStore();

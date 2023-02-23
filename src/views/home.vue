@@ -7,6 +7,7 @@
         :user-name="userName"
         :avatar-url="avatarUrl"
         @log-out="handleLogOut"
+        @history="handleHistory"
       ></user-info>
       <language-icon class="header-item language"></language-icon>
     </div>
@@ -17,7 +18,7 @@
       @enter-room="handleEnterRoom"
       
     ></room-control>
-  
+
   </div>
 </template>
 
@@ -36,6 +37,7 @@ import TUIRoomEngine from '@tencentcloud/tuiroom-engine-js';
 import useGetRoomEngine from '../TUIRoom/hooks/useRoomEngine';
 import { createRoom, joinRoom } from '@/api/commonApi';
 import { json } from 'stream/consumers';
+import History from "./Historicalmeetings.vue"
 
 const route = useRoute();
 const streamPreviewRef = ref();
@@ -164,7 +166,12 @@ async function handleLogOut() {
 **/
 
 }
+async function handleHistory() {
+  router.replace({
+      path: 'Historicalmeetings',
 
+    });
+}
 onMounted(async () => {
   const currentUserInfo = await getBasicIndfoByServer(basicInfo);
   if (currentUserInfo) {

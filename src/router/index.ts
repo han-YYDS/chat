@@ -32,7 +32,13 @@ const routes = [
   {
     path: '/forget',
     component: () => import('@/views/User/forget.vue'),
+  },
+  {
+    path:'/Historicalmeetings',
+    component: () => import('@/views/Historicalmeetings.vue'),
+
   }
+
 ];
 
 const router = createRouter({
