@@ -51,10 +51,7 @@
               type="text"
               @click="handleRouterChange('/register')"
             >注册</el-button>
-            <!-- <el-button
-              type="text"
-              @click="handleRouterChange('/forget')"
-            >忘记密码</el-button> -->
+ 
             <el-button
               type="text"
               @click="handleToForget()"
@@ -63,7 +60,7 @@
         </el-form>
       </el-card>
     </div>
-  </template>
+</template>
 <script lang="ts">
 import { defineComponent, reactive, ref, toRefs } from "vue";
 import { ElMessage } from "element-plus";

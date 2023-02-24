@@ -3,7 +3,7 @@ import router from "../router"
 
 
 // 在此设置后端port, 将前端的命令转发到后端8006
-export const baseurl = process.env.NODE_ENV === "production" ? "/suc-web/" : "http://192.168.43.199:8006"
+export const baseurl = process.env.NODE_ENV === "production" ? "/suc-web/" : "http://8.130.41.106:8006"
 
 // axios不允许跨域(跨端口),
 export const socketBaseUrl = process.env.NODE_ENV === "production" ? "/" : "ws://192.168.43.199:9091"

@@ -35,9 +35,9 @@ import { getBasicIndfoByServer, getBasicInfo } from '@/config/basic-info-config'
 import { useI18n } from 'vue-i18n';
 import TUIRoomEngine from '@tencentcloud/tuiroom-engine-js';
 import useGetRoomEngine from '../TUIRoom/hooks/useRoomEngine';
-import { createRoom, joinRoom } from '@/api/commonApi';
+import { createRoom, joinRoom, getHistory } from '@/api/commonApi';
 import { json } from 'stream/consumers';
-import History from "./Historicalmeetings.vue"
+
 
 const route = useRoute();
 const streamPreviewRef = ref();
@@ -118,7 +118,7 @@ async function handleCreateRoom(mode: string) {
     setTUIRoomData('createRoom', mode);
     let roomId = res.data;
     console.log(res);
-    router.replace({
+    router.push({
     path: 'room',
     query: {
       roomId,
@@ -140,13 +140,16 @@ async function handleEnterRoom(roomId: number) {
   joinRoom(params).then(res =>{
     //console.log(res.data);
     //let isSuccess = res.message;
-    setTUIRoomData('enterRoom');
-    router.replace({
-      path: 'room',
-      query: {
-        roomId,
-      },
-    });
+    
+      
+        setTUIRoomData('enterRoom');
+        router.push({
+          path: 'room',
+          query: {
+            roomId,
+          },
+        });
+
   })
 
   
@@ -167,10 +170,25 @@ async function handleLogOut() {
 
 }
 async function handleHistory() {
-  router.replace({
+  let params = {userId:basicInfo.userId.substring(5)};
+  getHistory(params).then(res => {
+    let data = res.data;
+    var tableData = [];
+    for(var i = 0; i < data.length; i++){
+      tableData.push({date:data[i].createTime,name:data[i].creatorName,roomId:data[i].roomId});
+    }
+    console.log(tableData)
+    console.log(data);
+    var tableDataEntity = {
+      arr:tableData
+    }
+    sessionStorage.setItem("tableData",JSON.stringify(tableDataEntity));
+    router.push({
       path: 'Historicalmeetings',
-
+     
     });
+  })
+
 }
 onMounted(async () => {
   const currentUserInfo = await getBasicIndfoByServer(basicInfo);

@@ -140,4 +140,11 @@ export function getUserInfo(data){
         data: data
     })
 }
+export function getHistory(data){
+    return request({
+        url: '/history',
+        method: 'get',
+        params: data
+    })
+}
 
