@@ -11,7 +11,7 @@
         <div class="user-control-item-head" @click="showEditUserNameDialog">{{ t('Edit profile') }}</div>
       </div>
       <div class="user-control-item-foot" @click="$emit('logOut')">{{ t('Log out') }}</div>
-      <div class="user-control-item-foot" @click="$event => $emit('history')">{{ t('history') }}</div>
+      <div class="user-control-item-foot" @click="_$event => $emit('history')">{{ t('history') }}</div>
     </div>
     <el-dialog
       :title="t('Edit profile')"

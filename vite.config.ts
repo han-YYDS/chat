@@ -39,13 +39,15 @@ export default defineConfig({
     },
   },
   server: {
-    open: true,
+    open: false,
+    host: '0.0.0.0'
   },
   // https://cn.vitejs.dev/guide/dep-pre-bundling.html#monorepos-and-linked-dependencies
   optimizeDeps: {
     include: ['@tencentcloud/tuiroom-engine-js'],
   },
   build: {
+    chunkSizeWarningLimit:5000,
     commonjsOptions: {
       exclude: ['@tencentcloud/tuiroom-engine-js'],
       include: [],

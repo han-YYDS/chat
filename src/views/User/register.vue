@@ -151,11 +151,11 @@
                 console.log('res',res)
                 var data:any = res.data;
                 
-                ElMessage({
-                message: "注册成功",
-                type: "sucess",
-                center: true,
-              });
+              //   ElMessage({
+              //   message: "注册成功",
+              //   type: "sucess",
+              //   center: true,
+              // });
               
             })
             } else {

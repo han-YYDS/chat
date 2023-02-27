@@ -1,6 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 
-const routes = [
+const routes:any = [
   {
     path: '/',
     redirect: '/login',
@@ -21,10 +21,7 @@ const routes = [
     path: '/maillogin',
     component: () => import('@/views/User/NewMailLogin.vue'),
   },
-  {
-    path: '/newlogin',
-    component: () => import('@/views/User/NewLogin.vue'),
-  },
+
   {
     path: '/register',
     component: () => import('@/views/User/register.vue'),
