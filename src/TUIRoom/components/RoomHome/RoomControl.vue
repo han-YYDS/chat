@@ -1,7 +1,7 @@
 <template>
   <div class="control-container">
     <div class="control-content">
-      <img class="logo" :src="zhiyin">
+      <img class="logo" :src="logo">
       <!--
         *The roomId exists in the query
         *

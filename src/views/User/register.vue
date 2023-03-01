@@ -19,9 +19,9 @@
           ref="register"
           class="registerForm"
         >
-          <el-form-item label="邮箱" prop="name">
+          <!-- <el-form-item label="邮箱" prop="name">
             <el-input v-model="registerForm.email"></el-input>
-          </el-form-item>
+          </el-form-item> -->
           <el-form-item
             label="账号"
             prop="name"
@@ -151,11 +151,11 @@
                 console.log('res',res)
                 var data:any = res.data;
                 
-              //   ElMessage({
-              //   message: "注册成功",
-              //   type: "sucess",
-              //   center: true,
-              // });
+                ElMessage({
+                message: "注册成功",
+                type: "sucess",
+                center: true,
+              });
               
             })
             } else {

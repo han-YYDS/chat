@@ -211,7 +211,7 @@ onMounted(async () => {
 .home-container {
   width: 100%;
   height: 100%;
-  background-color: #010101;
+  background-color: #0b1528;
   color: #B3B8C8;
   display: flex;
   justify-content: center;
